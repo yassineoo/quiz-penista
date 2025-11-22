@@ -200,7 +200,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
       {/* Answer Status Overlay */}
       {answerStatus && (
         <div
-          className={`absolute inset-0 flex items-center justify-center z-40 pointer-events-none transition-opacity duration-300 ${
+          className={`fixed top-0 left-0 right-0 w-[100vw] h-[100vh] flex items-center justify-center z-40 pointer-events-none transition-opacity duration-300 ${
             answerStatus === "correct" ? "bg-green-500/20" : "bg-red-500/20"
           }`}
         >
