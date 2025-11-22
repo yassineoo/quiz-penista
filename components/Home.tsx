@@ -1,57 +1,85 @@
-import React, { useState } from 'react';
-import { Logo } from './Logo';
-import { Button } from './Button';
+// Home.tsx
+import React, { useState } from "react";
+import { Button } from "./Button";
+import { Language, getTranslation } from "../translations";
+import { Globe } from "lucide-react";
 
 interface HomeProps {
   onStart: (name: string) => void;
+  language: Language;
+  onLanguageChange: (lang: Language) => void;
 }
 
-export const Home: React.FC<HomeProps> = ({ onStart }) => {
-  const [name, setName] = useState('');
-  const [error, setError] = useState(false);
+export const Home: React.FC<HomeProps> = ({ onStart, language, onLanguageChange }) => {
+  const [name, setName] = useState("");
+  const t = getTranslation(language);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (name.trim().length === 0) {
-      setError(true);
-      return;
+    if (name.trim()) {
+      onStart(name.trim());
     }
-    onStart(name.trim());
   };
 
+  const languages = [
+    { code: "fr" as Language, flag: "🇫🇷", name: "Français" },
+    { code: "en" as Language, flag: "🇬🇧", name: "English" },
+    { code: "ar" as Language, flag: "🇩🇿", name: "العربية" },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-full w-full max-w-md mx-auto px-6 py-10 text-center">
-      <div className="mb-12 animate-fade-in-down">
-        <Logo className="w-32 h-32 sm:w-40 sm:h-40" />
-      </div>
-      
-      <div className="space-y-2 mb-8 w-full">
-        <h2 className="text-3xl font-bold text-white">Event Quiz</h2>
-        <p className="text-brand-accent/80 text-lg">30 Seconds. How high can you score?</p>
-      </div>
+    <div className="flex-grow flex items-center justify-center px-4">
+      <div className="max-w-md w-full">
+        <h1 className="text-5xl font-bold text-center mb-8 text-white">{t.welcome}</h1>
 
-      <form onSubmit={handleSubmit} className="w-full space-y-6">
-        <div className="relative">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setError(false);
-            }}
-            placeholder="Enter your name"
-            className={`w-full bg-brand-surface border-2 ${error ? 'border-rose-500' : 'border-brand-accent/30 focus:border-brand-accent'} rounded-xl px-6 py-4 text-white text-xl placeholder-white/30 outline-none transition-colors`}
-            autoFocus
-          />
-          {error && (
-            <p className="absolute -bottom-6 left-0 text-rose-500 text-sm">Please enter your name to start.</p>
-          )}
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">{t.enterName}</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t.namePlaceholder}
+              className="w-full px-4 py-3 bg-brand-surface border-2 border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-brand-accent transition-colors"
+              required
+            />
+          </div>
 
-        <Button type="submit" fullWidth className="mt-4">
-          START GAME
-        </Button>
-      </form>
+          <Button type="submit" fullWidth>
+            {t.startGame}
+          </Button>
+
+          {/* Language Selector */}
+          <div className="pt-4 border-t border-white/10">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <Globe className="w-4 h-4 text-white/50" />
+              <span className="text-sm text-white/50 font-medium">{language === "fr" ? "Langue" : language === "en" ? "Language" : "اللغة"}</span>
+            </div>
+
+            <div className="flex gap-2 justify-center">
+              {languages.map((lang) => (
+                <button
+                  key={lang.code}
+                  type="button"
+                  onClick={() => onLanguageChange(lang.code)}
+                  className={`
+                    flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-sm 
+                    transition-all duration-200
+                    ${
+                      language === lang.code
+                        ? "bg-brand-accent text-brand-dark shadow-lg scale-105"
+                        : "bg-brand-surface text-white/60 hover:text-white hover:bg-white/5 hover:scale-105 border border-white/10"
+                    }
+                  `}
+                >
+                  <span className="text-lg">{lang.flag}</span>
+                  <span>{lang.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

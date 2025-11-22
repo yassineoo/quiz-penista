@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { Home } from './components/Home';
-import { Quiz } from './components/Quiz';
-import { Results } from './components/Results';
-import { GameState } from './types';
+import React, { useState } from "react";
+import { Home } from "./components/Home";
+import { Quiz } from "./components/Quiz";
+import { Results } from "./components/Results";
+import { GameState } from "./types";
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.INTRO);
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState("");
   const [finalScore, setFinalScore] = useState(0);
+  const [language, setLanguage] = useState("en");
 
   const handleStart = (name: string) => {
     setPlayerName(name);
@@ -20,7 +21,7 @@ const App: React.FC = () => {
   };
 
   const handleRestart = () => {
-    setPlayerName('');
+    setPlayerName("");
     setFinalScore(0);
     setGameState(GameState.INTRO);
   };
@@ -34,21 +35,11 @@ const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="relative z-10 min-h-screen flex flex-col">
-        {gameState === GameState.INTRO && (
-          <Home onStart={handleStart} />
-        )}
-        
-        {gameState === GameState.PLAYING && (
-          <Quiz onFinish={handleFinish} />
-        )}
+        {gameState === GameState.INTRO && <Home onStart={handleStart} language={language} onLanguageChange={setLanguage} />}
 
-        {gameState === GameState.RESULTS && (
-          <Results 
-            score={finalScore} 
-            currentName={playerName} 
-            onRestart={handleRestart} 
-          />
-        )}
+        {gameState === GameState.PLAYING && <Quiz onFinish={handleFinish} language={language} />}
+
+        {gameState === GameState.RESULTS && <Results score={finalScore} currentName={playerName} onRestart={handleRestart} language={language} />}
       </main>
     </div>
   );

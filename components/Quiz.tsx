@@ -3,9 +3,11 @@ import { QUESTIONS, GAME_DURATION_SECONDS } from "../constants";
 import { Button } from "./Button";
 import { Question } from "../types";
 import { CheckCircle, XCircle, Zap, Trophy } from "lucide-react";
+import { Language, getTranslation } from "../translations";
 
 interface QuizProps {
   onFinish: (score: number) => void;
+  language: Language;
 }
 
 // Fisher-Yates shuffle utility
@@ -29,13 +31,11 @@ const playSound = (frequency: number, duration: number, type: "correct" | "wrong
     gainNode.connect(audioContext.destination);
 
     if (type === "correct") {
-      // Happy ascending notes
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.5, audioContext.currentTime + duration);
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
     } else {
-      // Sad descending notes
       oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
       oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.5, audioContext.currentTime + duration);
       gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
@@ -49,7 +49,8 @@ const playSound = (frequency: number, duration: number, type: "correct" | "wrong
   }
 };
 
-export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
+export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
+  const t = getTranslation(language);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION_SECONDS);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -79,7 +80,6 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
     return () => clearInterval(timer);
   }, [timeLeft, onFinish, score]);
 
-  // Format time for display (e.g., 0:30)
   const formattedTime = `0:${timeLeft.toString().padStart(2, "0")}`;
 
   // Confetti effect
@@ -119,7 +119,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
   }, [currentIndex, questions.length, onFinish, score]);
 
   const handleAnswer = (selectedOption: string) => {
-    if (selectedAnswer) return; // Prevent multiple clicks
+    if (selectedAnswer) return;
 
     setSelectedAnswer(selectedOption);
     const currentQuestion = questions[currentIndex];
@@ -130,7 +130,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
       const bonusPoints = streak >= 3 ? 150 : 100;
       setScore((prev) => prev + bonusPoints);
       setStreak((prev) => prev + 1);
-      playSound(523.25, 0.3, "correct"); // C5 note
+      playSound(523.25, 0.3, "correct");
 
       if (streak >= 2) {
         setShowConfetti(true);
@@ -139,7 +139,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
     } else {
       setAnswerStatus("wrong");
       setStreak(0);
-      playSound(329.63, 0.5, "wrong"); // E4 note
+      playSound(329.63, 0.5, "wrong");
     }
 
     handleNextQuestion();
@@ -154,7 +154,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
     return (
       <div className="text-white text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-accent mx-auto"></div>
-        <p className="mt-4">Loading...</p>
+        <p className="mt-4">{t.loading}</p>
       </div>
     );
   }
@@ -164,10 +164,8 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4 py-6 flex flex-col h-full min-h-[600px] relative">
-      {/* Confetti Effect */}
       {showConfetti && <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">{createConfetti()}</div>}
 
-      {/* Progress Bar */}
       <div className="w-full h-2 bg-white/10 rounded-full mb-4 overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-brand-accent to-purple-500 transition-all duration-500 ease-out"
@@ -175,10 +173,9 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
         />
       </div>
 
-      {/* Header with Timer, Score, and Streak */}
       <div className="flex justify-between items-center mb-8 bg-brand-surface/50 p-4 rounded-xl border border-white/10 backdrop-blur-sm">
         <div className="flex flex-col">
-          <span className="text-xs text-brand-accent uppercase tracking-wider font-bold">Time</span>
+          <span className="text-xs text-brand-accent uppercase tracking-wider font-bold">{t.time}</span>
           <span className={`text-3xl font-bold tabular-nums transition-colors ${timeLeft <= 10 ? "text-rose-500 animate-pulse" : "text-white"}`}>
             {formattedTime}
           </span>
@@ -187,17 +184,18 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
         {streak >= 3 && (
           <div className="flex flex-col items-center animate-bounce">
             <Zap className="w-6 h-6 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs text-yellow-400 font-bold">🔥 {streak}x Streak!</span>
+            <span className="text-xs text-yellow-400 font-bold">
+              🔥 {streak}x {t.streak}!
+            </span>
           </div>
         )}
 
         <div className="flex flex-col items-end">
-          <span className="text-xs text-brand-accent uppercase tracking-wider font-bold">Score</span>
+          <span className="text-xs text-brand-accent uppercase tracking-wider font-bold">{t.score}</span>
           <span className="text-3xl font-bold text-white tabular-nums">{score}</span>
         </div>
       </div>
 
-      {/* Answer Status Overlay */}
       {answerStatus && (
         <div
           className={`fixed top-0 left-0 right-0 w-[100vw] h-[100vh] flex items-center justify-center z-40 pointer-events-none transition-opacity duration-300 ${
@@ -210,7 +208,6 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
         </div>
       )}
 
-      {/* Question Card */}
       <div
         className={`flex-grow transition-all duration-300 ${
           isAnimating ? "opacity-0 translate-y-4 scale-95" : "opacity-100 translate-y-0 scale-100"
@@ -218,7 +215,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
       >
         <div className="mb-2 flex items-center gap-2">
           <span className="text-sm text-white/50 font-medium">
-            Question {currentIndex + 1} of {questions.length}
+            {t.question} {currentIndex + 1} {t.of} {questions.length}
           </span>
           {streak >= 3 && <Trophy className="w-4 h-4 text-yellow-400 animate-pulse" />}
         </div>
@@ -261,7 +258,6 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
                 </span>
                 <span className="text-white">{option}</span>
 
-                {/* Ripple effect on click */}
                 {isSelected && <span className="absolute inset-0 bg-white/20 animate-ripple rounded-xl"></span>}
               </button>
             );
@@ -269,7 +265,6 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
         </div>
       </div>
 
-      {/* Footer Actions */}
       <div className="mt-auto pt-4 border-t border-white/10">
         <Button
           variant="outline"
@@ -278,11 +273,10 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish }) => {
           disabled={selectedAnswer !== null}
           className="text-white/60 hover:text-white border-white/10 hover:bg-white/5 disabled:opacity-30"
         >
-          Skip Question
+          {t.skipQuestion}
         </Button>
       </div>
 
-      {/* Add CSS for animations */}
       <style>{`
         @keyframes bounce-in {
           0% { transform: scale(0); }
