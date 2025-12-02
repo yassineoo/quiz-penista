@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { QUESTIONS, GAME_DURATION_SECONDS } from "../constants";
+import { QUESTIONS, GAME_DURATION_SECONDS, NUMBER_OF_QUESTIONS } from "../constants";
 import { Button } from "./Button";
 import { Question } from "../types";
 import { CheckCircle, XCircle, Zap, Trophy } from "lucide-react";
@@ -18,6 +18,12 @@ const shuffleArray = <T,>(array: T[]): T[] => {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;
+};
+
+// Select random questions from the pool
+const selectRandomQuestions = (questions: Question[], count: number): Question[] => {
+  const shuffled = shuffleArray(questions);
+  return shuffled.slice(0, Math.min(count, questions.length));
 };
 
 // Sound effects using Web Audio API
@@ -61,9 +67,9 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
   const [streak, setStreak] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Initialize questions on mount
+  // Initialize questions on mount - select random questions
   useEffect(() => {
-    setQuestions(shuffleArray(QUESTIONS));
+    setQuestions(selectRandomQuestions(QUESTIONS, NUMBER_OF_QUESTIONS));
   }, []);
 
   // Timer logic
@@ -123,7 +129,8 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
 
     setSelectedAnswer(selectedOption);
     const currentQuestion = questions[currentIndex];
-    const isCorrect = selectedOption === currentQuestion.answer;
+    const correctAnswer = currentQuestion.answer[language];
+    const isCorrect = selectedOption === correctAnswer;
 
     if (isCorrect) {
       setAnswerStatus("correct");
@@ -220,12 +227,14 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
           {streak >= 3 && <Trophy className="w-4 h-4 text-yellow-400 animate-pulse" />}
         </div>
 
-        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 leading-tight">{currentQuestion.question}</h3>
+        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 leading-tight">
+          {currentQuestion.question[language]}
+        </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
-          {currentQuestion.options.map((option, idx) => {
+          {currentQuestion.options[language].map((option, idx) => {
             const isSelected = selectedAnswer === option;
-            const isCorrectAnswer = option === currentQuestion.answer;
+            const isCorrectAnswer = option === currentQuestion.answer[language];
             const showCorrect = selectedAnswer && isCorrectAnswer;
             const showWrong = isSelected && answerStatus === "wrong";
 
