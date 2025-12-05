@@ -238,33 +238,37 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
 
             const isCorrectAnswer = option === currentQuestion.answer[language];
             const showWrong = isSelected && answerStatus === "wrong";
-
             const showCorrect = selectedAnswer?.questionIndex === currentIndex && isCorrectAnswer;
 
             return (
               <button
-                key={idx}
-                onClick={() => handleAnswer(option)}
+                // key includes question identity to force new DOM per question
+                key={`${currentQuestion.id ?? currentIndex}-${idx}`}
+                onClick={(e) => {
+                  handleAnswer(option);
+                  // remove focus ring so it doesn't appear on the next question
+                  (e.currentTarget as HTMLElement).blur();
+                }}
                 disabled={selectedAnswer?.questionIndex === currentIndex}
                 className={`
-                  relative overflow-hidden
-                  bg-brand-surface border-2 text-left p-6 rounded-xl text-lg font-semibold 
-                  transition-all duration-300 active:scale-[0.98] group
-                ${!selectedAnswer?.answer && "hover:border-brand-accent hover:bg-brand-accent/10 hover:scale-105"}
-                  ${showCorrect && "border-green-500 bg-green-500/20 animate-pulse-success"}
-                  ${showWrong && "border-red-500 bg-red-500/20 animate-shake"}
-                  ${!isSelected && !showCorrect && "border-white/10"}
-                  ${selectedAnswer && !isSelected && !showCorrect && "opacity-50"}
-                `}
+        relative overflow-hidden
+        bg-brand-surface border-2 text-left p-6 rounded-xl text-lg font-semibold 
+        transition-all duration-300 active:scale-[0.98] group
+        ${!selectedAnswer && "hover:border-brand-accent hover:bg-brand-accent/10 hover:scale-105"}
+        ${showCorrect && "border-green-500 bg-green-500/20 animate-pulse-success"}
+        ${showWrong && "border-red-500 bg-red-500/20 animate-shake"}
+        ${!isSelected && !showCorrect && "border-white/10"}
+        ${selectedAnswer && !isSelected && !showCorrect && "opacity-50"}
+      `}
               >
                 <span
                   className={`
-                    inline-block w-8 h-8 rounded-full text-center leading-8 text-sm mr-3 
-                    transition-all duration-300
-                    ${showCorrect && "bg-green-500 text-white"}
-                    ${showWrong && "bg-red-500 text-white"}
-                    ${!selectedAnswer?.answer && "bg-white/10 text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-dark"}
-                  `}
+          inline-block w-8 h-8 rounded-full text-center leading-8 text-sm mr-3 
+          transition-all duration-300
+          ${showCorrect && "bg-green-500 text-white"}
+          ${showWrong && "bg-red-500 text-white"}
+          ${!selectedAnswer && "bg-white/10 text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-dark"}
+        `}
                 >
                   {showCorrect ? "✓" : showWrong ? "✗" : String.fromCharCode(65 + idx)}
                 </span>
