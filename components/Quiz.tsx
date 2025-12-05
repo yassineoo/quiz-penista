@@ -62,7 +62,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<{ answer: string; questionIndex: number } | null>(null);
   const [answerStatus, setAnswerStatus] = useState<"correct" | "wrong" | null>(null);
   const [streak, setStreak] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -113,7 +113,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
   const handleNextQuestion = useCallback(() => {
     setIsAnimating(true);
     setTimeout(() => {
-      setSelectedAnswer(null);
+      setSelectedAnswer(null); // ← Ceci devrait déjà être là
       setAnswerStatus(null);
       if (currentIndex < questions.length - 1) {
         setCurrentIndex((prev) => prev + 1);
@@ -126,8 +126,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
 
   const handleAnswer = (selectedOption: string) => {
     if (selectedAnswer) return;
-
-    setSelectedAnswer(selectedOption);
+    setSelectedAnswer({ answer: selectedOption, questionIndex: currentIndex });
     const currentQuestion = questions[currentIndex];
     const correctAnswer = currentQuestion.answer[language];
     const isCorrect = selectedOption === correctAnswer;
@@ -227,16 +226,16 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
           {streak >= 3 && <Trophy className="w-4 h-4 text-yellow-400 animate-pulse" />}
         </div>
 
-        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 leading-tight">
-          {currentQuestion.question[language]}
-        </h3>
+        <h3 className="text-2xl sm:text-3xl font-bold text-white mb-8 leading-tight">{currentQuestion.question[language]}</h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
           {currentQuestion.options[language].map((option, idx) => {
-            const isSelected = selectedAnswer === option;
+            const isSelected = selectedAnswer?.questionIndex === currentIndex && selectedAnswer?.answer === option;
+
             const isCorrectAnswer = option === currentQuestion.answer[language];
-            const showCorrect = selectedAnswer && isCorrectAnswer;
             const showWrong = isSelected && answerStatus === "wrong";
+
+            const showCorrect = selectedAnswer?.questionIndex === currentIndex && isCorrectAnswer;
 
             return (
               <button
