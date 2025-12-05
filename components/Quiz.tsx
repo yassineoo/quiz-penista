@@ -109,12 +109,14 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
     }
     return confettiElements;
   };
-
   const handleNextQuestion = useCallback(() => {
+    // Reset state NOW before animation
+    setSelectedAnswer(null);
+    setAnswerStatus(null);
+
     setIsAnimating(true);
+
     setTimeout(() => {
-      setSelectedAnswer(null); // ← Ceci devrait déjà être là
-      setAnswerStatus(null);
       if (currentIndex < questions.length - 1) {
         setCurrentIndex((prev) => prev + 1);
         setIsAnimating(false);
@@ -248,7 +250,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
                   relative overflow-hidden
                   bg-brand-surface border-2 text-left p-6 rounded-xl text-lg font-semibold 
                   transition-all duration-300 active:scale-[0.98] group
-                  ${!selectedAnswer && "hover:border-brand-accent hover:bg-brand-accent/10 hover:scale-105"}
+                ${!selectedAnswer?.answer && "hover:border-brand-accent hover:bg-brand-accent/10 hover:scale-105"}
                   ${showCorrect && "border-green-500 bg-green-500/20 animate-pulse-success"}
                   ${showWrong && "border-red-500 bg-red-500/20 animate-shake"}
                   ${!isSelected && !showCorrect && "border-white/10"}
@@ -261,7 +263,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
                     transition-all duration-300
                     ${showCorrect && "bg-green-500 text-white"}
                     ${showWrong && "bg-red-500 text-white"}
-                    ${!selectedAnswer && "bg-white/10 text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-dark"}
+                    ${!selectedAnswer?.answer && "bg-white/10 text-brand-accent group-hover:bg-brand-accent group-hover:text-brand-dark"}
                   `}
                 >
                   {showCorrect ? "✓" : showWrong ? "✗" : String.fromCharCode(65 + idx)}
