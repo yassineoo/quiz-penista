@@ -125,7 +125,9 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
   }, [currentIndex, questions.length, onFinish, score]);
 
   const handleAnswer = (selectedOption: string) => {
-    if (selectedAnswer) return;
+    // Vérifier si on a déjà répondu à CETTE question spécifiquement
+    if (selectedAnswer?.questionIndex === currentIndex) return;
+
     setSelectedAnswer({ answer: selectedOption, questionIndex: currentIndex });
     const currentQuestion = questions[currentIndex];
     const correctAnswer = currentQuestion.answer[language];
@@ -241,7 +243,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
               <button
                 key={idx}
                 onClick={() => handleAnswer(option)}
-                disabled={selectedAnswer !== null}
+                disabled={selectedAnswer?.questionIndex === currentIndex}
                 className={`
                   relative overflow-hidden
                   bg-brand-surface border-2 text-left p-6 rounded-xl text-lg font-semibold 
@@ -278,7 +280,7 @@ export const Quiz: React.FC<QuizProps> = ({ onFinish, language }) => {
           variant="outline"
           fullWidth
           onClick={handlePass}
-          disabled={selectedAnswer !== null}
+          disabled={selectedAnswer?.questionIndex === currentIndex}
           className="text-white/60 hover:text-white border-white/10 hover:bg-white/5 disabled:opacity-30"
         >
           {t.skipQuestion}
